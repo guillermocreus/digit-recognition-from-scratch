@@ -2,15 +2,31 @@ import numpy as np
 from np import dot
 from math import exp
 
+N0 = 28 * 28 + 1
 N1 = 20
 
 def sigmoid(x):
     return 1.0/(1+exp(-x))
 
+sigmoid_v = np.vectorize(sigmoid)
 
 def sigmoid_d(x):
     return sigmoid(x)*(1-sigmoid(x))
 
+sigmoid_d_v = np.vectorize(sigmoid_d)
+
+def obtain_y(X, weights_capa1):
+    return sigmoid_v(X.dot(weights_capa1))
+
+def obtain_z(Y, weights_capa2):
+    return sigmoid_v(Y.dot(weights_capa2))
+
+def obtain_Ekt(k, t, label, data, y, z, weights_capa1, weights_capa2):
+    zkt = 0
+    if (label == t) zkt = 1
+
+    return sigmoid(float(y.dot(weights_capa2.[t].A.T))) - zkt #Aislar columna 
+    
 def grad_capa1_ij(data, weights_capa1, weights_capa2, i0, j0):
     M = len(data)
     result = 0
@@ -23,8 +39,7 @@ def grad_capa2_jt(data, weights_capa1, weights_capa2, j0, to):
     M = len(data)
     result = 0
     for k in range(M):
-        result += -2 * E[k][t0] * sigmoid_d(z_barra[k][t0]) * y[j0] 
-    
+        result += -2 * E[k][t0] * sigmoid_d(z_barra[k][t0]) * y[j0])
 
 def grad_capa1(data, weights_capa1, N1):
     M = len(data)
@@ -32,4 +47,12 @@ def grad_capa1(data, weights_capa1, N1):
     for i in range(28*28 + 1):
         for j in range(N1):
             grad_capa1[i][j] = grad_capa1_ij(data, weights_capa1, i, j)
-        
+
+
+def main():    
+    weights_capa1 = np.zeros((N0, N1))
+    weights_capa2 = np.zeros((N1, 10))
+    Y = obtain_y(X, weights_capa1)
+    Z = obtain_z(Y, weights_capa2)
+
+main()
