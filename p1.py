@@ -4,7 +4,7 @@ from math import exp
 
 N0 = 28 * 28 + 1 #dimension layer 0
 N1 = 20 #dimension layer 1
-M #dimenion de data
+M #dimension de data
 
 def sigmoid(x):
     return 1.0/(1 + exp(-x))
