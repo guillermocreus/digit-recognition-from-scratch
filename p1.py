@@ -2,41 +2,47 @@ import numpy as np
 from np import dot
 from math import exp
 
-N0 = 28 * 28 + 1 #dimension layer 0
-N1 = 20 #dimension layer 1
-M #dimension de data
+N0 = 28 * 28 + 1  # dimension layer 0
+N1 = 20  # dimension layer 1
+M = len(csv)  # dimension de data
+
 
 def sigmoid(x):
     return 1.0/(1 + exp(-x))
 
-sigmoid_v = np.vectorize(sigmoid)
 
 def sigmoid_d(x):
     return sigmoid(x)*(1-sigmoid(x))
 
-sigmoid_d_v = np.vectorize(sigmoid_d)
 
 def square(x):
-	return x*x
-	
+    return x*x
+
+
+sigmoid_v = np.vectorize(sigmoid)
+sigmoid_d_v = np.vectorize(sigmoid_d)
 square_v = np.vectorize(square)
 
+
 def rel_error(new_error, old_error):
-	return abs(new_error - old_error) / new_error
+    return abs(new_error - old_error) / new_error
+
 
 def obtain_y(X, weights_capa1):
     return sigmoid_v(X.dot(weights_capa1))
 
+
 def obtain_z(Y, weights_capa2):
     return sigmoid_v(Y.dot(weights_capa2))
 
-def obtain_Ekt(label, Z, weights_capa1, weights_capa2): #Ekt Matriz, asumiendo label vector fila de dimension M
-	Ekt = np.zeros((M, 10))
-	for k in range(M):
-		for t in range(10):
-			zkt = 0
-			if (label == 0) zkt = 1
-			Ekt[k,t] = (Z[k,t] - zkt)
+
+def obtain_Ekt(label, Z, weights_capa1, weights_capa2):  # Ekt Matriz, asumiendo label vector fila de dimension M
+    Ekt = np.zeros((M, 10))
+    for k in range(M):
+	for t in range(10):
+	    zkt = 0
+	    if (label[k] == t) zkt = 1  # lo he cmabiado esto!!! creo q asi esta bien...
+	    Ekt[k, t] = (Z[k, t] - zkt)
     return Ekt
 
 def calculate_error(Ekt):
@@ -80,6 +86,9 @@ def grad_capa1(X, Y, weights_capa1, weights_capa2):
 	return grad_weights_capa1
 
 def main():    
+    csv = np.genfromtxt('data/train.csv', delimiter=",")
+    label = csv[1:, 0]
+    data = csv[1:, 1:]
     weights_capa1 = np.zeros((N0, N1))
     weights_capa2 = np.zeros((N1, 10))
     Y = obtain_y(X, weights_capa1)
