@@ -3,8 +3,8 @@ from math import exp
 
 # IMPORT DATA
 csv = np.genfromtxt('data/train.csv', delimiter=",")
-label = csv[1:, 0]
-data_sin_bias = csv[1:, 1:]
+label = csv[1:10, 0]
+data_sin_bias = csv[1:10, 1:]
 M = len(data_sin_bias)  # dimension de data
 bias = np.ones((M, 1))
 X = np.append(data_sin_bias, bias, axis=1)
@@ -65,34 +65,34 @@ def obtain_Ekt(label, Z, weights_capa1, weights_capa2): #Ekt Matriz, asumiendoo 
 """
 
 
-def grad_capa2_jt(Y, weights_capa1, weights_capa2, j0, t0):
+def grad_capa2_jt(Y, Ekt, weights_capa1, weights_capa2, j0, t0):
     derivada_jt = 0
     for k in range(M):
-        derivada_jt += E[k,t0] * sigmoid_d(float(Y[k].dot(weights_capa2.T[t0].T))) * Y[k,j0]
+        derivada_jt += Ekt[k,t0] * sigmoid_d(float(Y[k].dot(weights_capa2.T[t0].T))) * Y[k,j0]
     return derivada_jt
 
 
-def grad_capa2(Y, weights_capa1, weights_capa2):
+def grad_capa2(Y, Ekt, weights_capa1, weights_capa2):
     grad_weights_capa2 = np.zeros((N1, 10))
     for j in range(N1):
         for t in range(10):
-            grad_weights_capa2[j, t] = grad_capa2_jt(Y, weights_capa1, weights_capa2, j, t)
+            grad_weights_capa2[j, t] = grad_capa2_jt(Y, Ekt, weights_capa1, weights_capa2, j, t)
     return grad_weights_capa2
 
 
-def grad_capa1_ij(X, Y, weights_capa1, weights_capa2, i0, j0):
+def grad_capa1_ij(X, Y, Ekt, weights_capa1, weights_capa2, i0, j0):
     derivada_ij = 0
     for k in range(M):
         for t in range(10):
-            derivada_ij += E[k,t] * sigmoid_d(float(Y[k].dot(weights_capa2.T[t0].T))) * weights_capa2[j0,t] * sigmoid_d(float(X[k].dot(weights_capa1.T[j0].T))) * X[k,i0]
+            derivada_ij += Ekt[k,t] * sigmoid_d(float(Y[k].dot(weights_capa2.T[t].T))) * weights_capa2[j0,t] * sigmoid_d(float(X[k].dot(weights_capa1.T[j0].T))) * X[k,i0]
     return derivada_ij
 
 
-def grad_capa1(X, Y, weights_capa1, weights_capa2):
+def grad_capa1(X, Y, Ekt, weights_capa1, weights_capa2):
     grad_weights_capa1 = np.zeros((N1, 10))
     for i in range(N1):
         for j in range(10):
-            grad_weights_capa1[i,j] = grad_capa1_ij(X, Y, weights_capa1, weights_capa2, i, j)
+            grad_weights_capa1[i,j] = grad_capa1_ij(X, Y, Ekt, weights_capa1, weights_capa2, i, j)
 
     grad_weights_capa1[:, -1] = 0  # Forzar ceros en gradiente para el bias
     return grad_weights_capa1
@@ -114,8 +114,9 @@ def main():
     
     while (rel_error(new_error, old_error) > eps and cont < n_iteraciones):
         cont += 1
-        new_weights_capa1 = weights_capa1 - learning_rate * grad_capa1(X, Y, weights_capa1, weights_capa2)
-        new_weights_capa2 = weights_capa2 - learning_rate * grad_capa2(Y, weights_capa1, weights_capa2)
+        print("buenas")
+        new_weights_capa1 = weights_capa1 - learning_rate * grad_capa1(X, Y, Ekt, weights_capa1, weights_capa2)
+        new_weights_capa2 = weights_capa2 - learning_rate * grad_capa2(Y, Ekt, weights_capa1, weights_capa2)
         weights_capa1 = new_weights_capa1.copy()
         weights_capa2 = new_weights_capa2.copy()
         Y = obtain_y(X, weights_capa1)
@@ -123,6 +124,7 @@ def main():
         Ekt = obtain_Ekt(label, Z, weights_capa1, weights_capa2)
         old_error = new_error
         new_error = calculate_error(Ekt)
+        print(rel_error(new_error, old_error), cont)
 
 
 main()
