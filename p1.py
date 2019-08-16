@@ -1,17 +1,16 @@
 import numpy as np
-from np import dot
 from math import exp
 
 # IMPORT DATA
 csv = np.genfromtxt('data/train.csv', delimiter=",")
 label = csv[1:, 0]
 data_sin_bias = csv[1:, 1:]
+M = len(data_sin_bias)  # dimension de data
 bias = np.ones((M, 1))
-data = np.append(data, bias, axis=1)
+data = np.append(data_sin_bias, bias, axis=1)
 
 N0 = 28 * 28 + 1  # dimension layer 0
 N1 = 20  # dimension layer 1
-M = len(data)  # dimension de data
 
 
 def sigmoid(x):
@@ -46,10 +45,12 @@ def obtain_z(Y, weights_capa2):
 def obtain_Ekt(label, Z, weights_capa1, weights_capa2):  # Ekt Matriz, asumiendo label vector fila de dimension M
     Ekt = np.zeros((M, 10))
     for k in range(M):
-	for t in range(10):
+        for t in range(10):
             zkt = 0
-            if (int(label[k]) == t) zkt = 1  # lo he cmabiado esto!!! creo q asi esta bien...
-	    Ekt[k, t] = (Z[k, t] - zkt)
+            if (int(label[k]) == t):
+                zkt = 1  # lo he cmabiado esto!!! creo q asi esta bien...
+            Ekt[k, t] = (Z[k, t] - zkt)
+
     return Ekt
 
 def calculate_error(Ekt):
@@ -61,22 +62,24 @@ def obtain_Ekt(label, Z, weights_capa1, weights_capa2): #Ekt Matriz, asumiendo l
 	for k in range(M):
 		Ekt[k,label[k]] += -1
     return Ekt
-"""   
+"""
 
-    
+
 def grad_capa2_jt(Y, weights_capa1, weights_capa2, j0, t0):
     derivada_jt = 0
     for k in range(M):
         derivada_jt += E[k,t0] * sigmoid_d(float(Y[k].dot(weights_capa2.T[t0].T))) * Y[k,j0]
     return derivada_jt
 
+
 def grad_capa2(Y, weights_capa1, weights_capa2):
     grad_weights_capa2 = np.zeros((N1, 10))
     for j in range(N1):
-	for t in range(10):
-            grad_weights_capa2[j,t] = grad_capa2_jt(Y, weights_capa1, weights_capa2, j, t)
+        for t in range(10):
+            grad_weights_capa2[j, t] = grad_capa2_jt(Y, weights_capa1, weights_capa2, j, t)
     return grad_weights_capa2
-          
+
+
 def grad_capa1_ij(X, Y, weights_capa1, weights_capa2, i0, j0):
     M = len(data)
     derivada_ij = 0
@@ -85,14 +88,16 @@ def grad_capa1_ij(X, Y, weights_capa1, weights_capa2, i0, j0):
             derivada_ij += E[k,t] * sigmoid_d(float(Y[k].dot(weights_capa2.T[t0].T))) * weights_capa2[j0,t] * sigmoid_d(float(X[k].dot(weights_capa1.T[j0].T))) * X[k,i0]
     return derivada_ij
 
+
 def grad_capa1(X, Y, weights_capa1, weights_capa2):
     grad_weights_capa1 = np.zeros((N1, 10))
     for i in range(N1):
-	for j in range(10):
+        for j in range(10):
             grad_weights_capa1[i,j] = grad_capa1_ij(X, Y, weights_capa1, weights_capa2, i, j)
 
     grad_weights_capa1[:, -1] = 0  # Forzar ceros en gradiente para el bias
     return grad_weights_capa1
+
 
 def main():    
     weights_capa1 = np.zeros((N0, N1))
