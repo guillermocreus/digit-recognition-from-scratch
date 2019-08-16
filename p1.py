@@ -7,7 +7,7 @@ label = csv[1:, 0]
 data_sin_bias = csv[1:, 1:]
 M = len(data_sin_bias)  # dimension de data
 bias = np.ones((M, 1))
-data = np.append(data_sin_bias, bias, axis=1)
+X = np.append(data_sin_bias, bias, axis=1)
 
 N0 = 28 * 28 + 1  # dimension layer 0
 N1 = 20  # dimension layer 1
@@ -81,7 +81,6 @@ def grad_capa2(Y, weights_capa1, weights_capa2):
 
 
 def grad_capa1_ij(X, Y, weights_capa1, weights_capa2, i0, j0):
-    M = len(data)
     derivada_ij = 0
     for k in range(M):
         for t in range(10):
@@ -105,8 +104,7 @@ def main():
     Y = obtain_y(X, weights_capa1)
     Z = obtain_z(Y, weights_capa2)
     Ekt = obtain_Ekt(label, Z, weights_capa1, weights_capa2)
-
-    epsilon = 1e-6
+    eps = 1e-6
     n_iteraciones = 5000
     cont = 0
     learning_rate = 0.01
@@ -114,7 +112,7 @@ def main():
     old_error = np.inf
     new_error = calculate_error(Ekt)
     
-    while (rel_error > eps and cont < n_iteraciones):
+    while (rel_error(new_error, old_error) > eps and cont < n_iteraciones):
         cont += 1
         new_weights_capa1 = weights_capa1 - learning_rate * grad_capa1(X, Y, weights_capa1, weights_capa2)
         new_weights_capa2 = weights_capa2 - learning_rate * grad_capa2(Y, weights_capa1, weights_capa2)
