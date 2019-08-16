@@ -53,10 +53,10 @@ def obtain_Ekt(label, Z, weights_capa1, weights_capa2):  # Ekt Matriz, asumiendo
     return Ekt
 
 def calculate_error(Ekt):
-    return 0.5 * float(np.ones(M).dot(square_v(Ekt)).dot(np.ones(10).T))
+    return 0.5 * float(np.ones(M).dot(square_v(Ekt)).dot(np.ones(10).T)) 
 
 """
-def obtain_Ekt(label, Z, weights_capa1, weights_capa2): #Ekt Matriz, asumiendo label vector fila de dimension M
+def obtain_Ekt(label, Z, weights_capa1, weights_capa2): #Ekt Matriz, asumiendoo label vector fila de dimension M
 	Ekt = Z.copy()
 	for k in range(M):
 		Ekt[k,label[k]] += -1
