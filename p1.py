@@ -3,27 +3,28 @@ import time
 
 # IMPORT DATA
 csv = np.genfromtxt('data/train.csv', delimiter=",")
-label = csv[1:, 0]
-data_sin_bias = csv[1:, 1:]
+label = csv[1:30, 0]
+data_sin_bias = csv[1:30, 1:]
 data_sin_bias /= 783
 M = len(data_sin_bias)  # dimension de data
 bias = np.ones((M, 1))
 X = np.append(data_sin_bias, bias, axis=1)
 
 N0 = 28 * 28 + 1  # dimension layer 0
-N1 = 100  # dimension layer 1
+N1 = 20  # dimension layer 1
 
 
 def sigmoid(x):
+    return 1.0/(1 + np.exp(-x/30))
     if (x < -50):
         return 0
     elif (x > 50):
         return 1
-    return 1.0/(1 + np.exp(-x))
+    
 
 
 def sigmoid_d(y):
-    return y*(1-y)
+    return y*(1-y)*1/30
 
 
 def square(x):
@@ -44,7 +45,7 @@ def obtain_y(X, weights_capa1):
     cont = 0
     for k in range(M):
         for j in range(N1):
-            if (res[k][j] < 1e-2 or (1 - res[k][j]) < 1e-2):
+            if (res[k][j] < 5*1e-2 or (1 - res[k][j]) < 5*1e-2):
                 cont += 1
     print("% Neuronas saturadas (Y):")
     print(100.0 * cont / (N1 * M))
@@ -56,7 +57,7 @@ def obtain_z(Y, weights_capa2):
     cont = 0
     for k in range(M):
         for t in range(10):
-            if (res[k][t] < 1e-2 or (1 - res[k][t]) < 1e-2):
+            if (res[k][t] < 5*1e-2 or (1 - res[k][t]) < 5*1e-2):
                 cont += 1
     print("% Neuronas saturadas (Z):")
     print(100.0 * cont / (10 * M))
@@ -113,17 +114,18 @@ def grad_capa1(X, delta_capa1):
 
 
 def main():
-    weights_capa1 = 1e-9 * np.random.rand(N0, N1)  # [i, j]
-    weights_capa2 = 1e-9 * np.random.rand(N1, 10)  # [j, t]
+    weights_capa1 =  np.random.rand(N0, N1)  # [i, j]
+    weights_capa2 =  np.random.rand(N1, 10)  # [j, t]
     Y = obtain_y(X, weights_capa1)
     Y[:, -1] = 1
     Z = obtain_z(Y, weights_capa2)
     Ekt = obtain_Ekt(label, Z, weights_capa1, weights_capa2)
-    eps = 1e-6
-    n_iteraciones = 50
+    eps = 1e-4
+    n_iteraciones = 0
     cont = 0
     learning_rate = 0.01
-
+    print(label[1])
+    print(label[2])
     old_error = np.inf
     new_error = calculate_error(Ekt)
     
@@ -147,5 +149,7 @@ def main():
         print(old_error, new_error)
         print('rel Error = ' + str(rel_error(new_error, old_error)) + ',', 'elapsed time = '+str(end-start)+',', cont)
         print()
+    print(Z[1,:])
+    print(Z[2,:])
 
 main()
