@@ -1,7 +1,11 @@
 import numpy as np
 import time
+from labeled_data import import_labeled_data
 
 # IMPORT DATA
+A = import_labeled_data()
+print(A[2][0])
+
 csv = np.genfromtxt('data/train.csv', delimiter=",")
 label = csv[1:30, 0]
 data_sin_bias = csv[1:30, 1:]
