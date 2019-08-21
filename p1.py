@@ -3,7 +3,7 @@ import time
 from labeled_data import import_labeled_data
 
 # IMPORT DATA
-A = import_labeled_data()
+A, cont = import_labeled_data()
 print(A[2][0])
 
 csv = np.genfromtxt('data/train.csv', delimiter=",")
