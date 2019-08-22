@@ -41,7 +41,7 @@ def obtain_Ek(Y, X, r0, s0):  # Ek Matriz, asumiendo label vector fila de dimens
         if (k >= v[r0]):
             zk = 1
         Ek[k] = (Y[k] - zk)
-    print(Ek)
+    #print(Ek)
     return Ek
 
 
@@ -72,13 +72,20 @@ def train_classifier(r0, s0):
     Y = obtain_y(X, weights)
     Ek = obtain_Ek(Y, X, r0, s0)
     eps = 1e-5
-    n_iteraciones = 1000
+    n_iteraciones = 500
     cont = 0
     learning_rate = 0.01
     old_error = np.inf
     new_error = calculate_error(Ek, X)
+
     
-    while (rel_error(new_error, old_error) > eps and cont < n_iteraciones):
+    csv = np.genfromtxt('data/test.csv', delimiter=",")
+    foto1 = np.append(csv[1, :]/783, np.ones(1), axis=0)
+    # while (rel_error(new_error, old_error) > eps and cont < n_iteraciones):
+    while (cont < n_iteraciones):
+        if (cont % 10 == 0): 
+            print("THE END")
+            print("Prediction", float(sigmoid(weights.dot(foto1))), float(weights.dot(foto1)))
         cont += 1
         print("buenas")
         start = time.time()
@@ -91,6 +98,38 @@ def train_classifier(r0, s0):
         print("stop")
         print(old_error, new_error)
         print('rel Error = ' + str(rel_error(new_error, old_error)) + ',', 'elapsed time = '+str(end-start)+',', cont)
-        print()
+        print(Y)
+        
+    return weights
 
-train_classifier(0, 1)
+def test_data(binary_nets, foto):
+    v = 10 * [0]
+    for digits in binary_nets:
+        result = float(sigmoid(weights.dot(foto)))
+        if result >= .5:
+            v[digits[1]] += 1
+        else:
+            v[digits[0]] += 1
+    return np.argmax(v)
+    
+
+
+
+
+
+def main():
+    iterator = combinations('0123456789', 2) #iterador con (0,1), (0,2), ... , (8,9)
+    binary_nets = {} #diccionario con todos los classificadores binarios
+    for digits in iterator:
+        digits = tuple(map(int,digits)) #pasar a integer
+        d0 = digits[0]
+        d1 = digits[1]
+        W = train_classifier(d0,d1)
+        d[digits] = W
+
+    
+    
+
+    
+	
+train_classifier(0, 2)
