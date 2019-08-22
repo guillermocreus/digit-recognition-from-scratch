@@ -48,11 +48,11 @@ class Neural_Network_Binary:
     def feed_forward(self):
         self.Z = (self.X).dot(self.W)
         
-    def obtain_Ekt(self, label):  # Ekt Matriz, asumiendo label vector fila de dimension M
+    def obtain_Ekt(self):  # Ekt Matriz, asumiendo label vector fila de dimension M
         Ekt = np.zeros((M, 1))
         for k in range(M):
             target = 0
-            if (label[k] == self.digits[0]): 
+            if (self.label[k] == self.digits[0]): 
                 target = 1
             Ekt = self.Z[k] - target
         return Ekt
@@ -69,117 +69,31 @@ class Neural_Network_Binary:
         for j in range(self.N0):
             for t in range(1):
                 gradient = delta[:, t].dot(X[:, j])
-                    
                 
-                
-                
+	def calculate_error(self, Ekt):
+		aux = square_v(Ekt).dot(np.ones(1))
+		return 0.5 * float(np.ones(self.M).dot(aux))
         
         
-        
-    
-        
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-def obtain_y(X, weights_capa1):
-    res = sigmoid_v(X.dot(weights_capa1))
+def gradient_descend(NeuralNet, n_iteraciones, eps, learning_rate):
     cont = 0
-    for k in range(M):
-        for j in range(N1):
-            if (res[k][j] < 5*1e-2 or (1 - res[k][j]) < 5*1e-2):
-                cont += 1
-    print("% Neuronas saturadas (Y):")
-    print(100.0 * cont / (N1 * M))
-    return res
+    NeuralNet.feed_forward() #Inicializa toda la red (Calcula Z)
+    Ekt = NeuralNet.obtain_Ekt()
+    old_error = np.inf
+    new_error = calculate_error(NeuralNet, Ekt)
+    
+    while (rel_error(new_error, old_error) > eps and cont < n_iteraciones): 
+        cont += 1
+        gradient = obtain_gradient(NeuralNet, obtain_delta(NeuralNet, Ekt))
+        self.W = self.W - learning_rate * gradient
+        NeuralNet.feed_forward() #Inicializa toda la red (Calcula Z)
+        Ekt = NeuralNet.obtain_Ekt()
+        old_error = new_error
+        new_error = calculate_error(NeuralNet, Ekt)
+    
+    return NeuralNet    
 
-
-def obtain_z(Y, weights_capa2):
-    res = sigmoid_v(Y.dot(weights_capa2))
-    cont = 0
-    for k in range(M):
-        for t in range(10):
-            if (res[k][t] < 5*1e-2 or (1 - res[k][t]) < 5*1e-2):
-                cont += 1
-    print("% Neuronas saturadas (Z):")
-    print(100.0 * cont / (10 * M))
-    return res
-
-
-def obtain_Ekt(label, Z, weights_capa1, weights_capa2):  # Ekt Matriz, asumiendo label vector fila de dimension M
-    Ekt = np.zeros((M, 10))
-    for k in range(M):
-        for t in range(10):
-            zkt = 0
-            if (int(label[k]) == t):
-                zkt = 1
-            Ekt[k, t] = (Z[k, t] - zkt)
-    return Ekt
-
-
-def calculate_error(Ekt):
-    aux = square_v(Ekt).dot(np.ones(10))
-    return 0.5 * float(np.ones(M).dot(aux))
-
-
-def obtain_delta_capa2(Z, Ekt):
-    delta_capa2 = np.zeros((M, 10))
-    for k in range(M):
-        for t in range(10):
-            delta_capa2[k, t] = Ekt[k, t] * sigmoid_d(float(Z[k, t]))
-    return delta_capa2
-
-
-def grad_capa2(Y, delta_capa2):
-    grad_weights_capa2 = np.zeros((N1, 10))
-    for j in range(N1):
-        for t in range(10):
-            grad_weights_capa2[j, t] = delta_capa2[:, t].dot(Y[:, j])
-    return grad_weights_capa2
-
-
-def obtain_delta_capa1(Y, Ekt, weights_capa2, delta_capa2):
-    delta_capa1 = np.zeros((M, N1))
-    for k in range(M):
-        for j in range(N1):
-            delta_capa1[k, j] = sigmoid_d(float(Y[k, j])) * delta_capa2[k, :].dot(weights_capa2[j, :])
-    return delta_capa1
-
-
-def grad_capa1(X, delta_capa1):
-    grad_weights_capa1 = np.zeros((N0, N1))
-    for i in range(N0):
-        for j in range(N1):
-            grad_weights_capa1[i, j] = delta_capa1[:, j].dot(X[:, i])
-    # grad_weights_capa1[:, -1] = 0  # Forzar ceros en gradiente para el bias CREO QUE ESTA MAL, ESTOY PENSANDO EN W transpuesta CREO _ REVISAR TODAS LAS W
-    return grad_weights_capa1
-
+'''
 
 def main():
     weights_capa1 =  np.random.rand(N0, N1)  # [i, j]
