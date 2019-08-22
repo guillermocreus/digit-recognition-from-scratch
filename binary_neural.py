@@ -1,21 +1,8 @@
 import numpy as np
 import time
 from labeled_data import import_labeled_data
+from itertools import combinations
 
-# IMPORT DATA
-A = import_labeled_data()
-print(A[2][0])
-
-csv = np.genfromtxt('data/train.csv', delimiter=",")
-label = csv[1:30, 0]
-data_sin_bias = csv[1:30, 1:]
-data_sin_bias /= 783
-M = len(data_sin_bias)  # dimension de data
-bias = np.ones((M, 1))
-X = np.append(data_sin_bias, bias, axis=1)
-
-N0 = 28 * 28 + 1  # dimension layer 0
-N1 = 20  # dimension layer 1
 
 
 def sigmoid(x):
@@ -46,7 +33,7 @@ class Neural_Network_Binary:
         self.W = np.random.rand(self.N0, 1)
         
     def feed_forward(self):
-        self.Z = (self.X).dot(self.W)
+        self.Z = sigmoid_v((self.X).dot(self.W))
         
     def obtain_Ekt(self):  # Ekt Matriz, asumiendo label vector fila de dimension M
         Ekt = np.zeros((M, 1))
@@ -93,45 +80,22 @@ def gradient_descend(NeuralNet, n_iteraciones, eps, learning_rate):
     
     return NeuralNet    
 
-'''
 
 def main():
-    weights_capa1 =  np.random.rand(N0, N1)  # [i, j]
-    weights_capa2 =  np.random.rand(N1, 10)  # [j, t]
-    Y = obtain_y(X, weights_capa1)
-    Y[:, -1] = 1
-    Z = obtain_z(Y, weights_capa2)
-    Ekt = obtain_Ekt(label, Z, weights_capa1, weights_capa2)
-    eps = 1e-4
-    n_iteraciones = 0
-    cont = 0
-    learning_rate = 0.01
-    print(label[1])
-    print(label[2])
-    old_error = np.inf
-    new_error = calculate_error(Ekt)
-    
-    while (rel_error(new_error, old_error) > eps and cont < n_iteraciones):
-        # while (cont < n_iteraciones):
-        cont += 1
-        print("buenas")
-        start = time.time()
-        delta_capa2 = obtain_delta_capa2(Z, Ekt)
-        delta_capa1 = obtain_delta_capa1(Y, Ekt, weights_capa2, delta_capa2)
-        weights_capa2 -= learning_rate * grad_capa2(Y, delta_capa2)
-        weights_capa1 -= learning_rate * grad_capa1(X, delta_capa1)
-        Y = obtain_y(X, weights_capa1)
-        Y[:, -1] = 1
-        Z = obtain_z(Y, weights_capa2)
-        Ekt = obtain_Ekt(label, Z, weights_capa1, weights_capa2)
-        old_error = new_error
-        new_error = calculate_error(Ekt)
-        end = time.time()
-        print("stop")
-        print(old_error, new_error)
-        print('rel Error = ' + str(rel_error(new_error, old_error)) + ',', 'elapsed time = '+str(end-start)+',', cont)
-        print()
-    print(Z[1,:])
-    print(Z[2,:])
+    data, vM = import_labeled_data()
+    iterator = combinations('0123456789', 2) #iterador con (0,1), (0,2), ... , (8,9)
+    binary_nets = {} #diccionario con todos los classificadores binarios
+    for digits in iterator:
+        d0 = int(digits[0])
+        d1 = int(digits[1])
+        X1 = A[d0]
+        X2 = A[d1]
+        X = np.concatenate((X1, X2), axis = 0) # v[r0] y v[s0] dan el numero de elementos existentes de ese label
+        label = vM[d0]*[d0] + vM[d1]*[d1]
+        NNB = Neural_Network_Binary(X, label, digits)
+        NNB = gradient_descend(NNB, 5000, 1e-4, 0.01)
+        binary_nets[digits] = NNB
+    return binary_nets
+        
+        
 
-main()

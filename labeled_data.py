@@ -5,16 +5,18 @@ def import_labeled_data():
 	label = csv[1:, 0]
 	fotos_sin_bias = csv[1:, 1:]
 	fotos_sin_bias /= 783
-	M = len(fotos_sin_bias)  # dimension de data
+	M = len(fotos_sin_bias)  #data dimension
 	bias = np.ones((M, 1))
-	fotos = np.append(fotos_sin_bias, bias, axis=1)
-	v = 10 * [0]
+	fotos = np.append(fotos_sin_bias, bias, axis=1) #added bias node
+	vM = 10 * [0] #vector con numero de fotos de cada digito
 	for k in range(M):
-		v[int(label[k])] += 1
+		vM[int(label[k])] += 1
 
-	A = np.empty((10,),dtype=object)
+	A = np.empty((10,),dtype=object) #array donde componente i sera una matriz de data de digito i
+	print(A[0])
+	
 	for i in range(10):
-		A[i] = np.empty((v[i], 785))
+		A[i] = np.empty((vM[i], 785))
 
 	cont = 10 * [0]
 	for k in range(M):
@@ -24,4 +26,4 @@ def import_labeled_data():
 
 	del fotos  # libero memoria de las fotos (ya no se usaran)
 
-	return A, v
+	return A, vM
