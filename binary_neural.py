@@ -85,7 +85,7 @@ def gradient_descend(NeuralNet, n_iteraciones, eps, learning_rate):
     while (rel_error(new_error, old_error) > eps and cont < n_iteraciones): 
         cont += 1
         gradient = obtain_gradient(NeuralNet, obtain_delta(NeuralNet, Ekt))
-        self.W = self.W - learning_rate * gradient
+        NeuralNet.W = NeuralNet.W - learning_rate * gradient
         NeuralNet.feed_forward() #Inicializa toda la red (Calcula Z)
         Ekt = NeuralNet.obtain_Ekt()
         old_error = new_error
