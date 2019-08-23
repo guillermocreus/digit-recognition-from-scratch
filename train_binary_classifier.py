@@ -1,9 +1,12 @@
 import numpy as np
 import time
-from labeled_data import import_labeled_data
+import sys
 
 # IMPORT DATA
+sys.path.insert(0, 'Import_data')
+from labeled_data import import_labeled_data
 A, v = import_labeled_data()
+# __________________________________________
 
 N0 = 28 * 28 + 1  # dimension layer 0
 M = 0;  # Se actualiza posteriormente
