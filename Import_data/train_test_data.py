@@ -5,18 +5,18 @@ def shuffle(fotos, label):
 	vM_train = 10 * [0]
 	vM_test = 10 * [0]
 	M = len(fotos)
-	N_train = int(0.8 * M)
+	N_train = int(0.75 * M)
 	fotos_shuffled = np.empty(fotos.shape, dtype=fotos.dtype)
 	label_shuffled = np.empty(label.shape, dtype=label.dtype)
 	np.random.seed(2)  # Hara que la permutacion sea random pero siempre que se llame a la funcion sera la misma (para que sea reproducible)
 	perm = np.random.permutation(M)
 	for i in range(M):
-		fotos_shuffled[perm[i]] = fotos[i]
-		label_shuffled[perm[i]] = label[i]
-		if (perm[i] < N_train):
-			vM_train[int(label[perm[i]])] += 1
+		fotos_shuffled[i] = fotos[perm[i]]
+		label_shuffled[i] = label[perm[i]]
+		if (i < N_train):
+			vM_train[int(label_shuffled[i])] += 1
 		else:
-			vM_test[int(label[perm[i]])] += 1
+			vM_test[int(label_shuffled[i])] += 1
 
 	return fotos_shuffled, label_shuffled, vM_train, vM_test
 
@@ -31,7 +31,7 @@ def train_test_data():
 	
 
 	fotos_shuffled, label_shuffled, vM_train, vM_test = shuffle(fotos, label)
-	N_train = int(0.8 * M)
+	N_train = int(0.75 * M)
 	N_test = M - N_train
 	
 	fotos_train = fotos_shuffled[:N_train,:]
@@ -46,8 +46,6 @@ def train_test_data():
 	for i in range(10):
 		A_train[i] = np.empty((vM_train[i], 785))
 		A_test[i] = np.empty((vM_test[i], 785))
-
-		print(vM_train[i])
 
 	print(len(fotos_train))
 	cont_train = 10 * [0]
