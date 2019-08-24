@@ -1,24 +1,24 @@
 import numpy as np
 
 def shuffle(fotos, label):
-	assert len(fotos) == len(label)
-	vM_train = 10 * [0]
-	vM_test = 10 * [0]
-	M = len(fotos)
-	N_train = int(0.75 * M)
-	fotos_shuffled = np.empty(fotos.shape, dtype=fotos.dtype)
-	label_shuffled = np.empty(label.shape, dtype=label.dtype)
-	np.random.seed(2)  # Hara que la permutacion sea random pero siempre que se llame a la funcion sera la misma (para que sea reproducible)
-	perm = np.random.permutation(M)
-	for i in range(M):
-		fotos_shuffled[i] = fotos[perm[i]]
-		label_shuffled[i] = label[perm[i]]
-		if (i < N_train):
-			vM_train[int(label_shuffled[i])] += 1
-		else:
-			vM_test[int(label_shuffled[i])] += 1
+        assert len(fotos) == len(label)
+        vM_train = 10 * [0]
+        vM_test = 10 * [0]
+        M = len(fotos)
+        N_train = int(0.75 * M)
+        fotos_shuffled = np.empty(fotos.shape, dtype=fotos.dtype)
+        label_shuffled = np.empty(label.shape, dtype=label.dtype)
+        np.random.seed(2)  # Hara que la permutacion sea random pero siempre que se llame a la funcion sera la misma (para que sea reproducible)
+        perm = np.random.permutation(M)
+        for i in range(M):
+                fotos_shuffled[i] = fotos[perm[i]]
+                label_shuffled[i] = label[perm[i]]
+                if (i < N_train):
+                        vM_train[int(label_shuffled[i])] += 1
+                else:
+                        vM_test[int(label_shuffled[i])] += 1
 
-	return fotos_shuffled, label_shuffled, vM_train, vM_test
+        return fotos_shuffled, label_shuffled, vM_train, vM_test
 
 def train_test_data():
 	csv = np.genfromtxt('data/train.csv', delimiter=",")

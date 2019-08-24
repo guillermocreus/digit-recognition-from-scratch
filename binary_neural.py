@@ -1,18 +1,24 @@
+# ___________ IMPORTS ______________________
 import numpy as np
-import time
-from labeled_data import import_labeled_data
+import time, sys
 from itertools import combinations
+from train_binary_classifier import train_classifier
+sys.path.insert(0, 'Import_data')
+from train_test_data import train_test_data
 
-
+# __________________________________________
 
 def sigmoid(x):
     return 1.0/(1 + np.exp(-x/30))
 
+
 def sigmoid_d(y):
     return y*(1-y)*1/30
 
+
 def square(x):
     return x*x
+
 
 sigmoid_v = np.vectorize(sigmoid)
 sigmoid_d_v = np.vectorize(sigmoid_d)
@@ -80,6 +86,8 @@ def gradient_descend(NeuralNet, n_iteraciones, eps, learning_rate):
     
     return NeuralNet    
 
+'''
+
 def main():
     data, vM = import_labeled_data()
     X = np.concatenate((data[1], data[1]), axis = 0) # v[r0] y v[s0] dan el numero de elementos existentes de ese label
@@ -91,22 +99,20 @@ def main():
 '''
 
 def main():
-    data, vM = import_labeled_data()
-    iterator = combinations('0123456789', 2) #iterador con (0,1), (0,2), ... , (8,9)
-    binary_nets = {} #diccionario con todos los classificadores binarios
+    A_train, A_test, label_train, label_test, v_train, v_test = train_test_data()
+    iterator = combinations('0123456789', 2)  # iterador con (0,1), (0,2), ... , (8,9)
+    binary_nets = {}  # diccionario con todos los classificadores binarios
     for digits in iterator:
         digits = tuple(map(int,digits)) #pasar a integer
         d0 = digits[0]
         d1 = digits[1]
-        X1 = data[d0]
-        X2 = data[d1]
-        X = np.concatenate((X1, X2), axis = 0) # v[r0] y v[s0] dan el numero de elementos existentes de ese label
-        label = vM[d0]*[d0] + vM[d1]*[d1]
-        NNB = Neural_Network_Binary(X, label, digits)
-        NNB = gradient_descend(NNB, 5000, 1e-4, 0.01)
-        binary_nets[digits] = NNB
+        X1 = A_train[d0]
+        X2 = A_train[d1]
+        X = np.concatenate((X1, X2), axis = 0)
+        separador = len(X1)
+        binary_nets[digits] = train_classifier(X, separador, d0, d1)
     
     return binary_nets
-'''
+
 
 main()
