@@ -1,8 +1,10 @@
 import numpy as np
 import time
+from numpy.linalg import inv
 
 N0 = 28 * 28 + 1  # dimension layer 0
 M = 0;  # Se actualiza posteriormente
+
 
 def sigmoid(x):
     return 1.0/(1 + np.exp(-x/30))    
@@ -46,6 +48,17 @@ def calculate_error(Ek, X):
     return 0.5 * float(np.ones(M).dot(aux))
 
 
+def hessian(X, Y, Ek):
+    M = len(X)
+    Y_d = sigmoid_d_v(Y)
+    H = np.zeros((785, 785))
+    for i in range(785):
+        for j in range(785):
+            if (i <= j):
+                for k in range(M):
+                    H[i, j] += Y_d[k] * X[k][i] * X[k][j] * (Y_d[k] + Ek[k] * (1 - 2 * Y[k]))
+                H[j, i] = H[i, j]
+
 def grad(X, Y, Ek):
     M = len(X)
     grad_weights = np.zeros(N0)
@@ -58,34 +71,38 @@ def grad(X, Y, Ek):
     return grad_weights
 
 
-# Entrena el clasificador binario de labels d0, d1 y devuelve los pesos 
+# Entrena el clasificador binario de labels d0, d1 y devuelve los pesos
 # Supongo que el output correcto es d1 --> output = 1
 def train_classifier(X, separador, d0, d1):
     M = len(X)
     weights = np.random.rand(N0)  # [i, t]
     Y = obtain_y(X, weights)
     Ek = obtain_Ek(X, Y, separador, d0, d1)
-    # eps = 1e-5
+    eps = 1e-5
     n_iteraciones = 500
     cont = 0
     learning_rate = 0.01
     old_error = np.inf
     new_error = calculate_error(Ek, X)
 
-    while (cont < n_iteraciones):
+    while (cont < n_iteraciones and rel_error(new_error, old_error) > eps):
+        print("inside")
         cont += 1
         start = time.time()
-        weights -= learning_rate * grad(X, Y, Ek)
+        gradiente = grad(X, Y, Ek)
+        Hessian = hessian(X, Y, Ek)
+        weights -= learning_rate * inv(Hessian).dot(gradiente)
         Y = obtain_y(X, weights)
         Ek = obtain_Ek(X, Y, separador, d0, d1)
         old_error = new_error
         new_error = calculate_error(Ek, X)
-        end = time.time()
+
         print(old_error, new_error)
-        print('Training ' + d0 + ' vs ' d1 + ': -->', 'rel Error = ' + str(rel_error(new_error, old_error)) + ',', 'elapsed time = '+str(end-start)+',', cont, '\n')
+        print('Training ' + d0 + ' vs ' + d1 + ': -->', 'rel Error = ' + str(rel_error(new_error, old_error)) + ',', 'elapsed time = '+str(end-start)+',', cont, '\n')
         print(Y)
-        
+
     return weights
+
 
 def test_data(binary_nets, foto):
     v = 10 * [0]

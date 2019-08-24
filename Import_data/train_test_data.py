@@ -47,7 +47,7 @@ def train_test_data():
 		A_train[i] = np.empty((vM_train[i], 785))
 		A_test[i] = np.empty((vM_test[i], 785))
 
-	print(len(fotos_train))
+	
 	cont_train = 10 * [0]
 	for k in range(N_train):
 		i = int(label_train[k])
