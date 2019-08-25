@@ -63,3 +63,26 @@ def train_test_data():
 	del fotos  # libero memoria de las fotos (ya no se usaran)
 
 	return A_train, A_test, label_train, label_test, vM_train, vM_test
+
+def all_train_test_data():
+	csv = np.genfromtxt('data/train.csv', delimiter=",")
+	label = csv[1:, 0]
+	fotos_sin_bias = csv[1:, 1:]
+	fotos_sin_bias /= 783
+	M = len(fotos_sin_bias)  #data dimension
+	bias = np.ones((M, 1))
+	fotos = np.append(fotos_sin_bias, bias, axis=1) #added bias node
+	
+	fotos_shuffled, label_shuffled, vM_train, vM_test = shuffle(fotos, label)
+	N_train = int(0.75 * M)
+	N_test = M - N_train
+	
+	fotos_train = fotos_shuffled[:N_train,:]
+	label_train = label_shuffled[:N_train]
+
+	fotos_test = fotos_shuffled[N_train:,:]
+	label_test = label_shuffled[N_train:]
+
+	del fotos  # libero memoria de las fotos (ya no se usaran)
+
+	return fotos_train, fotos_test, label_train, label_test
