@@ -2,6 +2,7 @@ import numpy as np
 import time
 from numpy.linalg import inv
 import sys
+from itertools import combinations
 sys.path.insert(0, 'Import_data')
 from train_test_data import train_test_data
 
@@ -102,9 +103,9 @@ def train_classifier(X, separador, d0, d1):
         Ek = obtain_Ek(X, Y, separador, d0, d1)
         old_error = new_error
         new_error = calculate_error(Ek, X)
-
+        end = time.time()
         print(old_error, new_error)
-        print('Training ' + d0 + ' vs ' + d1 + ': -->', 'rel Error = ' + str(rel_error(new_error, old_error)) + ',', 'elapsed time = '+str(end-start)+',', cont, '\n')
+        print('Training ' + str(d0) + ' vs ' + str(d1) + ': -->', 'rel Error = ' + str(rel_error(new_error, old_error)) + ',', 'elapsed time = '+str(end-start)+',', cont, '\n')
         print(Y)
 
     return weights
@@ -125,7 +126,9 @@ def test_data(binary_nets, foto):
 def train_binary_nets():
     iterator = combinations('0123456789', 2)  # iterador con (0,1), (0,2), ... , (8,9)
     binary_nets = {}  # diccionario con todos los classificadores binarios
+
     for digits in iterator:
+
         digits = tuple(map(int,digits)) #pasar a integer
         d0 = digits[0]
         d1 = digits[1]
@@ -133,7 +136,12 @@ def train_binary_nets():
         X2 = A_train[d1]
         X = np.concatenate((X1, X2), axis = 0)
         separador = len(X1)
-        binary_nets[digits] = train_classifier(X, separador, d0, d1)
+        weights = train_classifier(X, separador, d0, d1)
+        
+        name = 'saved_weights/weights' + str(d0) + 'vs' + str(d1) + '.csv'
+        np.savetxt(name, weights, delimiter=",")
+        binary_nets[digits] = weights
+
     
     return binary_nets
     
@@ -151,3 +159,6 @@ def main ():
             if (prediction == i): N_aciertos += 1
         print("Precision en digito ", i, " : ", precision) 
     print("Precision Final: ", precision)
+
+
+main()
