@@ -85,7 +85,7 @@ def train_classifier(X, separador, d0, d1):
     Y = obtain_y(X, weights)
     Ek = obtain_Ek(X, Y, separador, d0, d1)
     eps = 1e-5
-    n_iteraciones = 100
+    n_iteraciones = 3
     cont = 0
     learning_rate = 0.01
     old_error = np.inf
