@@ -1,6 +1,11 @@
 import numpy as np
 import time
 from numpy.linalg import inv
+import sys
+sys.path.insert(0, 'Import_data')
+from train_test_data import train_test_data
+
+A_train, A_test, label_train, label_test, v_train, v_test = train_test_data()
 
 N0 = 28 * 28 + 1  # dimension layer 0
 M = 0;  # Se actualiza posteriormente
@@ -79,19 +84,20 @@ def train_classifier(X, separador, d0, d1):
     Y = obtain_y(X, weights)
     Ek = obtain_Ek(X, Y, separador, d0, d1)
     eps = 1e-5
-    n_iteraciones = 500
+    n_iteraciones = 100
     cont = 0
     learning_rate = 0.01
     old_error = np.inf
     new_error = calculate_error(Ek, X)
 
-    while (cont < n_iteraciones and rel_error(new_error, old_error) > eps):
+    while (cont < n_iteraciones): #and rel_error(new_error, old_error) > eps):
         print("inside")
         cont += 1
         start = time.time()
         gradiente = grad(X, Y, Ek)
-        Hessian = hessian(X, Y, Ek)
-        weights -= learning_rate * inv(Hessian).dot(gradiente)
+        #Hessian = hessian(X, Y, Ek)
+        #weights -= learning_rate * inv(Hessian).dot(gradiente)
+        weights -= learning_rate * gradiente
         Y = obtain_y(X, weights)
         Ek = obtain_Ek(X, Y, separador, d0, d1)
         old_error = new_error
@@ -113,3 +119,35 @@ def test_data(binary_nets, foto):
         else:
             v[digits[0]] += 1
     return np.argmax(v)
+    
+    
+    
+def train_binary_nets():
+    iterator = combinations('0123456789', 2)  # iterador con (0,1), (0,2), ... , (8,9)
+    binary_nets = {}  # diccionario con todos los classificadores binarios
+    for digits in iterator:
+        digits = tuple(map(int,digits)) #pasar a integer
+        d0 = digits[0]
+        d1 = digits[1]
+        X1 = A_train[d0]
+        X2 = A_train[d1]
+        X = np.concatenate((X1, X2), axis = 0)
+        separador = len(X1)
+        binary_nets[digits] = train_classifier(X, separador, d0, d1)
+    
+    return binary_nets
+    
+def main ():
+    binary_nets = train_binary_nets()   
+    print("End training")
+     
+    N_aciertos = 0
+    N_test = len(label_test)
+    precision = N_aciertos/N_test
+    for i in range(10):
+        print(i)
+        for foto in A_test[i]:
+            prediction = test_data(binary_nets, foto)
+            if (prediction == i): N_aciertos += 1
+        print("Precision en digito ", i, " : ", precision) 
+    print("Precision Final: ", precision)
