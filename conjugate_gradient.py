@@ -1,6 +1,7 @@
 import numpy as np
 import time
 import sys
+from math import sqrt
 from itertools import combinations
 sys.path.insert(0, 'Import_data')
 from train_test_data import all_train_test_data
@@ -71,7 +72,7 @@ def obtain_z(Y, weights_capa2):
     return res
 
 
-def obtain_Ekt(label, Z, weights_capa1, weights_capa2):  # Ekt Matriz, asumiendo label vector fila de dimension M
+def obtain_Ekt(label, Z):  # Ekt Matriz, asumiendo label vector fila de dimension M
     Ekt = np.zeros((M, 10))
     for k in range(M):
         for t in range(10):
@@ -119,20 +120,52 @@ def grad_capa1(X, delta_capa1):
     return grad_weights_capa1
 
 
-def find_alpha(weights_capa1, weights_capa2, dir_weights1, dir_weights2, label, Z, error):
-	alpha = 0.05
-	error_nuevo = error + 1
-	new_weights1 = weights_capa1
-	new_weights2 = weights_capa2
+def find_alpha(weights_capa1, weights_capa2, dir_weights1, dir_weights2, grad_capa1, grad_capa2, label, X):
+	scalar_prod = 0
+	norm2 = 0
+	for i in range(len(dir_weights1)):
+		norm2 += square_v(dir_weights1[i]).dot(np.ones(len(dir_weights1[i])))
+		scalar_prod += dir_weights1[i].dot(grad_capa1[i])
 
-	while(error_nuevo >= error):
+	for i in range(len(dir_weights2)):
+		norm2 += square_v(dir_weights2[i]).dot(np.ones(len(dir_weights2[i])))
+		scalar_prod += dir_weights2[i].dot(grad_capa2[i])
+
+	norm2 = sqrt(norm2)
+	m = scalar_prod / norm2
+	print("m deberia ser negativa", m)
+	c = 0.5
+	t = -c * m
+
+	Y_aux = obtain_y(X, weights_capa1)
+	Z_aux = obtain_z(Y_aux, weights_capa2)
+	Ekt_aux = obtain_Ekt(label, Z_aux)
+	error = calculate_error(Ekt_aux)
+
+	# Normalizo la direccion de descenso
+	dir_weights1 /= norm2
+	dir_weights2 /= norm2
+
+	alpha = 0.2
+	error_nuevo = 2 * error + 1
+	new_weights1 = weights_capa1.copy()
+	new_weights2 = weights_capa2.copy()
+
+	while((error - error_nuevo) < alpha * t):
 		alpha /= 2
-		new_weights1 += alpha*dir_weights1
-		new_weights2 += alpha*dir_weights2
-		Ekt =obtain_Ekt(label, Z, new_weights1, new_weights2)
-		error_nuevo = calculate_error(Ekt)
+		
+		new_weights1 = weights_capa1.copy() + alpha*dir_weights1.copy()
+		new_weights2 = weights_capa2.copy() + alpha*dir_weights2.copy()
 
-	print("alpha", alpha)
+		Y_aux = obtain_y(X, new_weights1)
+		Z_aux = obtain_z(Y_aux, new_weights2)
+
+		Ekt_aux = obtain_Ekt(label, Z_aux)
+		error_nuevo = calculate_error(Ekt_aux)
+		print(alpha, error_nuevo, error)
+		print()
+
+	print("THE alpha", alpha)
 	return alpha
 
 def obtain_beta(gradiente_capa1, gradiente_capa2, old_grad_capa1, old_grad_capa2):
@@ -156,13 +189,23 @@ def main():
 	Y = obtain_y(X, weights_capa1)
 	Y[:, -1] = 1
 	Z = obtain_z(Y, weights_capa2)
-	Ekt = obtain_Ekt(label_train, Z, weights_capa1, weights_capa2)
+	Ekt = obtain_Ekt(label_train, Z)
 	eps = 1e-4
 	n_iteraciones = 100
 	cont = 0
 	learning_rate = 0.01
 	old_error = np.inf
 	new_error = calculate_error(Ekt)
+
+	
+	s_weights2 = 0
+	s_weights1 = 0
+
+	old_grad_capa2 = np.zeros((N1, 10))
+	old_grad_capa1 = np.zeros((N0, N1))
+
+	gradiente_capa2 = np.zeros((N1, 10))
+	gradiente_capa1 = np.zeros((N0, N1))
 
 	while (rel_error(new_error, old_error) > eps and cont < n_iteraciones):
 		cont += 1
@@ -175,15 +218,6 @@ def main():
 		delta_capa2 = obtain_delta_capa2(Z, Ekt)
 		delta_capa1 = obtain_delta_capa1(Y, Ekt, weights_capa2, delta_capa2)
 
-		s_weights2 = 0
-		s_weights1 = 0
-
-		old_grad_capa1 = 0
-		old_grad_capa2 = 0
-
-		gradiente_capa2 = 0
-		gradiente_capa1 = 0
-
 		if (cont == 1):
 			gradiente_capa2 = grad_capa2(Y, delta_capa2)
 			gradiente_capa1 = grad_capa1(X, delta_capa1)
@@ -192,8 +226,8 @@ def main():
 			s_weights1 = -gradiente_capa1
 
 		else:
-			old_grad_capa2 = gradiente_capa2
-			old_grad_capa1 = gradiente_capa1
+			old_grad_capa2 = gradiente_capa2.copy()
+			old_grad_capa1 = gradiente_capa1.copy()
 
 			gradiente_capa2 = grad_capa2(Y, delta_capa2)
 			gradiente_capa1 = grad_capa1(X, delta_capa1)
@@ -206,15 +240,17 @@ def main():
 		dir_weights2 = s_weights2
 		dir_weights1 = s_weights1
 
-		alpha = find_alpha(weights_capa1, weights_capa2, dir_weights1, dir_weights2, label_train, Z, new_error)
+		alpha = 0.1
+		if (cont >= 2):
+			alpha = find_alpha(weights_capa1, weights_capa2, dir_weights1, dir_weights2, gradiente_capa1, gradiente_capa2, label_train, X)
 
-		weights_capa2 -= alpha * dir_weights2
-		weights_capa1 -= alpha * dir_weights1
+		weights_capa2 += alpha * dir_weights2
+		weights_capa1 += alpha * dir_weights1
 
 		Y = obtain_y(X, weights_capa1)
 		Y[:, -1] = 1
 		Z = obtain_z(Y, weights_capa2)
-		Ekt = obtain_Ekt(label_train, Z, weights_capa1, weights_capa2)
+		Ekt = obtain_Ekt(label_train, Z)
 
 		old_error = new_error
 		new_error = calculate_error(Ekt)

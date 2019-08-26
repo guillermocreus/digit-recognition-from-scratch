@@ -29,7 +29,6 @@ sigmoid_d_v = np.vectorize(sigmoid_d)
 square_v = np.vectorize(square)
 
 
-
 def rel_error(new_error, old_error):
     return abs(new_error - old_error) / new_error
 
@@ -59,12 +58,20 @@ def hessian(X, Y, Ek):
     M = len(X)
     Y_d = sigmoid_d_v(Y)
     H = np.zeros((785, 785))
+    for k in range(M):
+        for i in range(785):
+            for j in range(785):
+                if (i <= j):
+                    H[i, j] += Y_d[k] * X[k][i] * X[k][j] * (Y_d[k] + Ek[k] * (1 - 2 * Y[k]))
+
+        print("Acabo foto " + str(k))
+
     for i in range(785):
         for j in range(785):
-            if (i <= j):
-                for k in range(M):
-                    H[i, j] += Y_d[k] * X[k][i] * X[k][j] * (Y_d[k] + Ek[k] * (1 - 2 * Y[k]))
-                H[j, i] = H[i, j]
+            if (i > j):
+                H[i, j] = H[j, i]
+
+    return H
 
 def grad(X, Y, Ek):
     M = len(X)
@@ -97,9 +104,10 @@ def train_classifier(X, separador, d0, d1):
         cont += 1
         start = time.time()
         gradiente = grad(X, Y, Ek)
-        #Hessian = hessian(X, Y, Ek)
-        #weights -= learning_rate * inv(Hessian).dot(gradiente)
-        weights -= learning_rate * gradiente
+        Hessian = hessian(X, Y, Ek)
+        print("hessiana acabada")
+        weights -= learning_rate * inv(Hessian).dot(gradiente)
+        #weights -= learning_rate * gradiente
         Y = obtain_y(X, weights)
         Ek = obtain_Ek(X, Y, separador, d0, d1)
         old_error = new_error
@@ -122,8 +130,7 @@ def test_data(binary_nets, foto):
             v[digits[0]] += 1
     return np.argmax(v)
     
-    
-    
+
 def train_binary_nets():
     iterator = combinations('0123456789', 2)  # iterador con (0,1), (0,2), ... , (8,9)
     binary_nets = {}  # diccionario con todos los classificadores binarios
