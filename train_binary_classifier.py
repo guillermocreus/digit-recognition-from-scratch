@@ -29,6 +29,7 @@ sigmoid_d_v = np.vectorize(sigmoid_d)
 square_v = np.vectorize(square)
 
 
+
 def rel_error(new_error, old_error):
     return abs(new_error - old_error) / new_error
 

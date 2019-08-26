@@ -12,6 +12,15 @@ N0 = 28 * 28 + 1  # dimension layer 0
 N1 = 20  # dimension layer 1
 
 
+def relu_mod(x):
+    if (x > 0): return x/100
+    else: return x/10000
+    
+def relu_d(y):
+    if (y > 0): return 1/100
+    else: return 1/10000
+
+
 def sigmoid(x):
     return 1.0/(1 + np.exp(-x/30))
     if (x < -50):
@@ -19,7 +28,6 @@ def sigmoid(x):
     elif (x > 50):
         return 1
     
-
 
 def sigmoid_d(y):
     return y*(1-y)*1/30
@@ -32,6 +40,7 @@ def square(x):
 sigmoid_v = np.vectorize(sigmoid)
 sigmoid_d_v = np.vectorize(sigmoid_d)
 square_v = np.vectorize(square)
+relu_mod_v = np.vectorize(relu_mod)
 
 
 def rel_error(new_error, old_error):
@@ -39,14 +48,14 @@ def rel_error(new_error, old_error):
 
 
 def obtain_y(X, weights_capa1):
-    res = sigmoid_v(X.dot(weights_capa1))
+    res = relu_mod_v(X.dot(weights_capa1))
     cont = 0
     for k in range(M):
         for j in range(N1):
             if (res[k][j] < 5*1e-2 or (1 - res[k][j]) < 5*1e-2):
                 cont += 1
-    print("% Neuronas saturadas (Y):")
-    print(100.0 * cont / (N1 * M))
+    #print("% Neuronas saturadas (Y):")
+    #print(100.0 * cont / (N1 * M))
     return res
 
 
@@ -98,7 +107,7 @@ def obtain_delta_capa1(Y, Ekt, weights_capa2, delta_capa2):
     delta_capa1 = np.zeros((M, N1))
     for k in range(M):
         for j in range(N1):
-            delta_capa1[k, j] = sigmoid_d(float(Y[k, j])) * delta_capa2[k, :].dot(weights_capa2[j, :])
+            delta_capa1[k, j] = relu_d(float(Y[k, j])) * delta_capa2[k, :].dot(weights_capa2[j, :])
     return delta_capa1
 
 
@@ -111,12 +120,12 @@ def grad_capa1(X, delta_capa1):
 
 
 def find_alpha(weights_capa1, weights_capa2, dir_weights1, dir_weights2, label, Z, error):
-	alpha = 1
+	alpha = 0.05
 	error_nuevo = error + 1
 	new_weights1 = weights_capa1
 	new_weights2 = weights_capa2
 
-	while(error_nuevo > error):
+	while(error_nuevo >= error):
 		alpha /= 2
 		new_weights1 += alpha*dir_weights1
 		new_weights2 += alpha*dir_weights2
@@ -127,7 +136,17 @@ def find_alpha(weights_capa1, weights_capa2, dir_weights1, dir_weights2, label, 
 	return alpha
 
 def obtain_beta(gradiente_capa1, gradiente_capa2, old_grad_capa1, old_grad_capa2):
-	return (gradiente_capa1.dot(gradiente_capa1) + gradiente_capa2.dot(gradiente_capa2)) / (old_grad_capa1.dot(old_grad_capa1) + old_grad_capa2.dot(old_grad_capa2))
+    num = 0
+    den = 0
+    for i in range(len(gradiente_capa1)):
+        num += gradiente_capa1[i].dot(gradiente_capa1[i])
+        den += old_grad_capa1[i].dot(old_grad_capa1[i])
+    
+    for i in range(len(gradiente_capa2)):
+        num += gradiente_capa2[i].dot(gradiente_capa2[i])
+        den += old_grad_capa2[i].dot(old_grad_capa2[i])
+        
+    return num/den
 
 
 def main():
@@ -147,6 +166,11 @@ def main():
 
 	while (rel_error(new_error, old_error) > eps and cont < n_iteraciones):
 		cont += 1
+
+		if (cont % 10 == 0):
+			for i in range(15) : 
+				print('Z : ', Z[i, :], ' , prediction : ', np.argmax(Z[i,:]), ' , label : ', label_train[i])
+
 		start = time.time()
 		delta_capa2 = obtain_delta_capa2(Z, Ekt)
 		delta_capa1 = obtain_delta_capa1(Y, Ekt, weights_capa2, delta_capa2)
