@@ -3,7 +3,7 @@ import time
 from numpy.linalg import inv
 import sys
 from itertools import combinations
-sys.path.insert(0, 'Import_data')
+sys.path.insert(0, '../Import_data')
 from train_test_data import train_test_data
 
 A_train, A_test, label_train, label_test, v_train, v_test = train_test_data()

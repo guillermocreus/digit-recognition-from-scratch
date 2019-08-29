@@ -1,7 +1,7 @@
 import numpy as np
 
 def import_labeled_data():
-	csv = np.genfromtxt('data/train.csv', delimiter=",")
+	csv = np.genfromtxt('../data/train.csv', delimiter=",")
 	label = csv[1:, 0]
 	fotos_sin_bias = csv[1:, 1:]
 	fotos_sin_bias /= 783

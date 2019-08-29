@@ -21,7 +21,7 @@ def shuffle(fotos, label):
         return fotos_shuffled, label_shuffled, vM_train, vM_test
 
 def train_test_data():
-	csv = np.genfromtxt('data/train.csv', delimiter=",")
+	csv = np.genfromtxt('../data/train.csv', delimiter=",")
 	label = csv[1:, 0]
 	fotos_sin_bias = csv[1:, 1:]
 	fotos_sin_bias /= 783

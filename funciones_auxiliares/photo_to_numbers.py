@@ -1,6 +1,6 @@
 import numpy as np
 
-csv = np.genfromtxt('data/test.csv', delimiter=",")
+csv = np.genfromtxt('../data/test.csv', delimiter=",")
 foto1 = csv[1, :]
 with open('numero.txt', 'w') as f:
 	for i in range(28):
