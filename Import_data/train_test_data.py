@@ -65,7 +65,7 @@ def train_test_data():
 	return A_train, A_test, label_train, label_test, vM_train, vM_test
 
 def all_train_test_data():
-	csv = np.genfromtxt('data/train.csv', delimiter=",")
+	csv = np.genfromtxt('../data/train.csv', delimiter=",")
 	label = csv[1:, 0]
 	fotos_sin_bias = csv[1:, 1:]
 	fotos_sin_bias /= 783
