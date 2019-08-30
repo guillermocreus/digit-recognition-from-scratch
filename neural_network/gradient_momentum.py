@@ -87,11 +87,7 @@ def calculate_error(Ekt):
 
 
 def obtain_delta_capa2(Z, Ekt):
-    delta_capa2 = np.zeros((M, 10))
-    for k in range(M):
-        for t in range(10):
-            delta_capa2[k, t] = Ekt[k, t] * sigmoid_d(float(Z[k, t]))
-    return delta_capa2
+    return Ekt * sigmoid_d(Z)
 
 
 def grad_capa2(Y, delta_capa2):
