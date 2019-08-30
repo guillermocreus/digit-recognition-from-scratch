@@ -4,7 +4,7 @@ import time
 
 # IMPORT DATA
 
-csv = np.genfromtxt('data/train.csv', delimiter=",")
+csv = np.genfromtxt('../data/train.csv', delimiter=",")
 label = csv[1:, 0]
 data_sin_bias = csv[1:, 1:]
 data_sin_bias /= 783

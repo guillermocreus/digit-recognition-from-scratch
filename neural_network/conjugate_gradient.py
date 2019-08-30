@@ -3,7 +3,7 @@ import time
 import sys
 from math import sqrt
 from itertools import combinations
-sys.path.insert(0, 'Import_data')
+sys.path.insert(0, '../Import_data')
 from train_test_data import all_train_test_data
 
 fotos_train, fotos_test, label_train, label_test = all_train_test_data()
