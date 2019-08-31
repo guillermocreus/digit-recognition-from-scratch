@@ -1,16 +1,17 @@
 import numpy as np
 import time
+import sys
+sys.path.insert(0, '../Import_data')
+from train_test_data import all_train_test_data
 
 
-# IMPORT DATA
+# ________ IMPORT DATA ______________
 
-csv = np.genfromtxt('../data/train.csv', delimiter=",")
-label = csv[1:, 0]
-data_sin_bias = csv[1:, 1:]
-data_sin_bias /= 783
-M = len(data_sin_bias)  # dimension de data
-bias = np.ones((M, 1))
-X = np.append(data_sin_bias, bias, axis=1)
+X, fotos_test, label, label_test = all_train_test_data()
+M = len(X)
+
+# ___________________________________
+
 
 N0 = 28 * 28 + 1  # dimension layer 0
 N1 = 20  # dimension layer 1
@@ -18,8 +19,8 @@ N1 = 20  # dimension layer 1
 
 def sigmoid(x):
     return 1.0/(1 + np.exp(-x/30))
-    if (x < -50): return 0
-    elif (x > 50): return 1
+    if (x < -150): return 0
+    elif (x > 150): return 1
 
 def sigmoid_d(y):
     return y*(1-y) * (1/30)

@@ -1,5 +1,13 @@
 import numpy as np
 
+def vector_label(label):
+	M = len(label)
+	label_v = np.zeros((M, 10))
+	for k in range(M):
+		label_v[k, int(label[k])] = 1
+
+	return label_v
+
 def shuffle(fotos, label):
         assert len(fotos) == len(label)
         vM_train = 10 * [0]
@@ -82,6 +90,8 @@ def all_train_test_data():
 
 	fotos_test = fotos_shuffled[N_train:,:]
 	label_test = label_shuffled[N_train:]
+
+	label_train = vector_label(label_train)
 
 	del fotos  # libero memoria de las fotos (ya no se usaran)
 
