@@ -1,13 +1,15 @@
 import numpy as np
 import time
+from numpy import linalg as LA
 import sys
 sys.path.insert(0, '../Import_data')
 from train_test_data import all_train_test_data
 
 
+
 # ________ IMPORT DATA ______________
 
-X, fotos_test, label, label_test = all_train_test_data()
+X, fotos_test, label_v, label_test = all_train_test_data()
 M = len(X)
 
 # ___________________________________
@@ -48,38 +50,15 @@ def rel_error(new_error, old_error):
 
 
 def obtain_y(X, weights_capa1):
-    res = relu_mod_v(X.dot(weights_capa1))
-    cont = 0
-    for k in range(M):
-        for j in range(N1):
-            if (res[k][j] < 5*1e-2 or (1 - res[k][j]) < 5*1e-2):
-                cont += 1
-    #print("% Neuronas saturadas (Y):")
-    #print(100.0 * cont / (N1 * M))
-    return res
+    return relu_mod_v(X.dot(weights_capa1))
 
 
 def obtain_z(Y, weights_capa2):
-    res = sigmoid_v(Y.dot(weights_capa2))
-    cont = 0
-    for k in range(M):
-        for t in range(10):
-            if (res[k][t] < 5*1e-2 or (1 - res[k][t]) < 5*1e-2):
-                cont += 1
-    print("% Neuronas saturadas (Z):")
-    print(100.0 * cont / (10 * M))
-    return res
+    return sigmoid_v(Y.dot(weights_capa2))
 
 
-def obtain_Ekt(label, Z, weights_capa1, weights_capa2):  # Ekt Matriz, asumiendo label vector fila de dimension M
-    Ekt = np.zeros((M, 10))
-    for k in range(M):
-        for t in range(10):
-            zkt = 0
-            if (int(label[k]) == t):
-                zkt = 1
-            Ekt[k, t] = (Z[k, t] - zkt)
-    return Ekt
+def obtain_Ekt(label_v, Z):
+    return Z - label_v
 
 
 def calculate_error(Ekt):
@@ -87,8 +66,21 @@ def calculate_error(Ekt):
     return 0.5 * float(np.ones(M).dot(aux))
 
 
+def predict(weights_capa1, weights_capa2, foto):
+    y0 = obtain_y(foto, weights_capa1)
+    z0 = obtain_z(y0, weights_capa2)
+    return int(np.argmax(z0))
+
+def print_precision(weights_capa1, weights_capa2):
+    aciertos = 0
+    for k0 in range(len(fotos_test)):
+        if (predict(weights_capa1, weights_capa2, fotos_test[k0]) == int(label_test[k0])): aciertos += 1
+    porcentaje_aciertos = 100 * aciertos / len(fotos_test)
+    print("El porcentaje de aciertos es del: ", str(porcentaje_aciertos), "%\n")
+
+
 def obtain_delta_capa2(Z, Ekt):
-    return Ekt * sigmoid_d(Z)
+    return np.multiply(Ekt, sigmoid_d_v(Z))
 
 
 def grad_capa2(Y, delta_capa2):
@@ -112,51 +104,55 @@ def grad_capa1(X, delta_capa1):
     for i in range(N0):
         for j in range(N1):
             grad_weights_capa1[i, j] = delta_capa1[:, j].dot(X[:, i])
-    # grad_weights_capa1[:, -1] = 0  # Forzar ceros en gradiente para el bias CREO QUE ESTA MAL, ESTOY PENSANDO EN W transpuesta CREO _ REVISAR TODAS LAS W
     return grad_weights_capa1
 
 
 def main():
-    weights_capa1 =  np.random.rand(N0, N1)  # [i, j]
-    weights_capa2 =  np.random.rand(N1, 10)  # [j, t]
+	np.random.seed(2)
+	weights_capa1 = np.sqrt(2 / N0) * np.random.rand(N0, N1)  # [i, j]
+    weights_capa2 = np.sqrt(2 / N1) * np.random.rand(N1, 10)  # [j, t]
+	update_capa1 = np.zeros((N0, N1))
+	update_capa2 = np.zeros((N1, 10))
+
+    weights_capa1 = np.random.rand(N0, N1)  # [i, j]
+    weights_capa2 = np.random.rand(N1, 10)  # [j, t]
     Y = obtain_y(X, weights_capa1)
     Y[:, -1] = 1
     Z = obtain_z(Y, weights_capa2)
-    Ekt = obtain_Ekt(label, Z, weights_capa1, weights_capa2)
+    Ekt = obtain_Ekt(label_v, Z)
     eps = 1e-4
-    n_iteraciones = 100
+    n_iteraciones = 800
     cont = 0
-    learning_rate = 0.1
-    print(label[1])
-    print(label[2])
-    old_error = np.inf
-    new_error = calculate_error(Ekt)
-    
-    while True: #(rel_error(new_error, old_error) > eps and cont < n_iteraciones):
-        # while (cont < n_iteraciones):
+    learning_rate = 0.05
+
+    while (cont < n_iteraciones):
         cont += 1
-        if (cont % 10 == 0):
-            for i in range(15) : print('Z : ', Z[i, :], ' , prediction : ', np.argmax(Z[i,:]), ' , label : ', label[i])
-        print("buenas")
+        if (cont % 10 == 0): print_precision(weights_capa1, weights_capa2)
+
         start = time.time()
         delta_capa2 = obtain_delta_capa2(Z, Ekt)
         delta_capa1 = obtain_delta_capa1(Y, Ekt, weights_capa2, delta_capa2)
-        weights_capa2 -= learning_rate * grad_capa2(Y, delta_capa2)
-        weights_capa1 -= learning_rate * grad_capa1(X, delta_capa1)
+
+        gradiente_capa2 = grad_capa2(Y, delta_capa2)
+        gradiente_capa1 = grad_capa1(X, delta_capa1)
+
+        update_capa1 = (1 - learning_rate) * update_capa1 - learning_rate * gradiente_capa1
+        update_capa2 = (1 - learning_rate) * update_capa2 - learning_rate * gradiente_capa2
+
+        weights_capa2 += update_capa2 
+        weights_capa1 += update_capa1
+
         Y = obtain_y(X, weights_capa1)
         Y[:, -1] = 1
         Z = obtain_z(Y, weights_capa2)
-        Ekt = obtain_Ekt(label, Z, weights_capa1, weights_capa2)
-        old_error = new_error
-        new_error = calculate_error(Ekt)
+
+        Ekt = obtain_Ekt(label_v, Z)
         end = time.time()
-        print("stop")
-        print(old_error, new_error)
-        print('rel Error = ' + str(rel_error(new_error, old_error)) + ',', 'elapsed time = '+str(end-start)+',', cont)
-        print()
-    print(Z[0:5, :])
-    print(label[0:5])
+
+        print("Iteracion: ", str(cont), "   Time elapsed: ", str(end - start), "\n")
+        if (cont % 10 == 0):
+            error = calculate_error(Ekt)
+            print("Error: ", error, "\n")
 
 main()
-
 

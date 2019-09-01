@@ -1,3 +1,4 @@
+# Empieza a las 14:00 01/09/2019
 import numpy as np
 import time
 from numpy import linalg as LA
@@ -76,7 +77,7 @@ def print_precision(weights_capa1, weights_capa2):
     for k0 in range(len(fotos_test)):
         if (predict(weights_capa1, weights_capa2, fotos_test[k0]) == int(label_test[k0])): aciertos += 1
     porcentaje_aciertos = 100 * aciertos / len(fotos_test)
-    print("El procentaje de aciertos es del: ", str(porcentaje_aciertos), "\n")
+    print("El porcentaje de aciertos es del: ", str(porcentaje_aciertos), "%\n")
 
 
 def obtain_delta_capa2(Z, Ekt):
@@ -109,8 +110,8 @@ def grad_capa1(X, delta_capa1):
 
 def main():
     np.random.seed(2)
-    weights_capa1 =  np.sqrt(2 / N0) * np.random.rand(N0, N1)  # [i, j]
-    weights_capa2 =  np.sqrt(2 / N1) * np.random.rand(N1, 10)  # [j, t]
+    weights_capa1 = np.sqrt(2 / N0) * np.random.rand(N0, N1)  # [i, j]
+    weights_capa2 = np.sqrt(2 / N1) * np.random.rand(N1, 10)  # [j, t]
     Y = obtain_y(X, weights_capa1)
     Y[:, -1] = 1
     Z = obtain_z(Y, weights_capa2)
@@ -122,7 +123,7 @@ def main():
 
     while (cont < n_iteraciones):
         cont += 1
-        if (cont % 50 == 0): print_precision(weights_capa1, weights_capa2)
+        if (cont % 10 == 0): print_precision(weights_capa1, weights_capa2)
 
         start = time.time()
         delta_capa2 = obtain_delta_capa2(Z, Ekt)

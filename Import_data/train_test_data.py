@@ -16,7 +16,7 @@ def shuffle(fotos, label):
         N_train = int(0.75 * M)
         fotos_shuffled = np.empty(fotos.shape, dtype=fotos.dtype)
         label_shuffled = np.empty(label.shape, dtype=label.dtype)
-        np.random.seed(2)  # Hara que la permutacion sea random pero siempre que se llame a la funcion sera la misma (para que sea reproducible)
+        np.random.seed(2)
         perm = np.random.permutation(M)
         for i in range(M):
                 fotos_shuffled[i] = fotos[perm[i]]
