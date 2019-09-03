@@ -9,27 +9,28 @@ from train_test_data import all_train_test_data
 
 # ________ IMPORT DATA ______________
 
-X, fotos_test, label_v, label_test = all_train_test_data()
+X, fotos_test, label_train, label_v, label_test = all_train_test_data()
 M = len(X)
-
-# ___________________________________
-
 
 N0 = 28 * 28 + 1  # dimension layer 0
 N1 = 20  # dimension layer 1
+# ___________________________________
 
+
+
+# __________ FUNCIONES ______________
 
 def sigmoid(x):
-    var = x * 1e-7
+    var = x * 1e-2
     return 1.0/(1 + np.exp(-var))
     if (var < -5): return 0.000001
     elif (var > 5): return 0.999999
 
 def sigmoid_d(y):
-    return y*(1-y) * 1e-7
+    return y*(1-y) * 1e-2
     
 def relu_mod(x):
-    var = x * 1e-4
+    var = x * 1e-2
     if (var > 0): 
         return var
     else: 
@@ -37,12 +38,23 @@ def relu_mod(x):
     
 def relu_d(y):
     if (y > 0): 
-        return 1e-4
+        return 1e-2
     else: 
-        return 1e-7
+        return 1e-5
 
 def square(x):
-    return x*x
+    return x * x
+
+def divide(x):
+    return 1 / x
+
+def exponencial(x, factor = 1e-3):
+    var = x * factor
+    if (var > 20):
+        return np.exp(20)
+    elif (var < -20):
+        return np.exp(-20)
+    return np.exp(var)
 
 
 sigmoid_v = np.vectorize(sigmoid)
@@ -50,6 +62,21 @@ sigmoid_d_v = np.vectorize(sigmoid_d)
 relu_mod_v = np.vectorize(relu_mod)
 relu_d_v = np.vectorize(relu_d)
 square_v = np.vectorize(square)
+divide_v = np.vectorize(divide)
+exp_v = np.vectorize(exponencial)
+
+# _______________________________________
+
+
+def softmax(Y, weights_capa2):
+    bkt = Y.dot(weights_capa2)
+    print(bkt[0,0], bkt[0,1], bkt[22, 3])
+    aux = exp_v(bkt)
+    suma = aux.dot(np.ones(10))
+    Z = (aux.T * divide_v(suma)).T
+    print(Z[0])
+    print(Z[1])
+    return Z
 
 
 def rel_error(new_error, old_error):
@@ -61,31 +88,25 @@ def obtain_y(X, weights_capa1):
 
 
 def obtain_z(Y, weights_capa2):
-    aux = sigmoid_v(Y.dot(weights_capa2))
-    cont = 0
-    for k in range(M):
-        for t in range(10):
-            if (aux[k][t] < 5*1e-2 or (1 - aux[k][t]) < 5*1e-2):
-                cont += 1
-    print("% Neuronas saturadas (Z):")
-    print(100.0 * cont / (10 * M))
-    return aux
+    return softmax(Y, weights_capa2)
+
 
 def obtain_Ekt(label_v, Z):
-    for i in range(10):
-        print(label_v[i], Z[i])
-    return np.multiply(label_v, np.log(Z))
+    return -np.multiply(label_v, np.log(Z))
 
 
 def calculate_error(Ekt):
     Ek = Ekt.dot(np.ones(10))
-    return - float(np.ones(M).dot(Ek))
+    return float(np.ones(M).dot(Ek))
 
 
 def predict(weights_capa1, weights_capa2, foto):
     y0 = relu_mod_v(foto.dot(weights_capa1))
-    z0 = sigmoid_v(y0.dot(weights_capa2))
+    z0 = exp_v(y0.dot(weights_capa2))
+    suma = float(z0.dot(np.ones(10)))
+    z0 /= suma
     return int(np.argmax(z0))
+
 
 def print_precision(weights_capa1, weights_capa2):
     aciertos = 0
@@ -96,8 +117,20 @@ def print_precision(weights_capa1, weights_capa2):
     print("El porcentaje de aciertos es del: ", str(porcentaje_aciertos), "%\n")
 
 
-def obtain_delta_capa2(Z, label_v):
-    return np.multiply(label_v, np.ones(Z.shape) - Z)
+def obtain_delta_capa2(Z, label_v, factor = 1e-3):
+    sum_without_t0 = np.ones(Z.shape)
+    sums = Z.dot(np.ones(10))
+    sum_without_t0 = (sum_without_t0.T * sums).T
+    sum_without_t0 = sum_without_t0 - Z
+    left_in = np.multiply(label_v, sum_without_t0)
+
+    right_in = np.ones(Z.shape)
+    sums_label = label_v.dot(np.ones(10))
+    right_in = (right_in.T * sums_label).T
+    right_in -= label_v
+    right_in = np.multiply(right_in, Z)
+    
+    return factor * ((left_in - right_in).T * divide_v(sums)).T
 
 
 def grad_capa2(Y, delta_capa2):
@@ -105,11 +138,11 @@ def grad_capa2(Y, delta_capa2):
 
 
 def obtain_delta_capa1(X, Y, weights_capa1, weights_capa2, delta_capa2):
-	return np.multiply(relu_d_v(X.dot(weights_capa1)), delta_capa2.dot(weights_capa2.T))
+    return np.multiply(relu_d_v(X.dot(weights_capa1)), delta_capa2.dot(weights_capa2.T))
 
 
 def grad_capa1(X, delta_capa1):
-	return X.T.dot(delta_capa1)
+    return X.T.dot(delta_capa1)
 
 
 def main():
@@ -122,7 +155,7 @@ def main():
     eps = 1e-4
     n_iteraciones = 800
     cont = 0
-    learning_rate = 0.05
+    learning_rate = 0.1
 
     while (cont < n_iteraciones):
         cont += 1
@@ -147,6 +180,9 @@ def main():
         print("Iteracion: ", cont, "   Time elapsed: ", str(end - start), "\n")
 
         if (cont % 10 == 0): 
+            print("Y = ", Y)
+            for k in range(15):
+                print("Z[" + str(k) + "] = ", Z[k], " , label = ", label_train[k])
             print_precision(weights_capa1, weights_capa2)
             Ekt = obtain_Ekt(label_v, Z)
             error = calculate_error(Ekt)
