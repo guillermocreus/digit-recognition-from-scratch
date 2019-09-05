@@ -153,7 +153,7 @@ def grad_capa1(X, delta_capa1):
 
 
 def dynamic_learning_rate(cont):
-    return 0.1 * (1 + np.exp(-5 * cont / 1000))
+    return 0.2 * (1 + np.exp(-5 * cont / 1000))
 
 
 def main():
@@ -164,7 +164,7 @@ def main():
     Y[:, -1] = 1
     Z = obtain_z(Y, weights_capa2)
     eps = 1e-4
-    n_iteraciones = 800
+    n_iteraciones = 4000
     cont = 0
     error_antiguo = 5e7
 
@@ -196,14 +196,7 @@ def main():
         if (cont % 10 == 0): 
             print("\n ESTADO DEL ENTRENAMIENTO:")
             print("\n________________________________\n")
-            print("Y = ", Y)
-            print("\n________________________________\n")
-            
-            for k in range(15):
-                print("Z[" + str(k) + "] = ", Z[k], " , label = ", label_train[k], "\n")
-                print("\n")
 
-            print("________________________________\n")
             print_precision(weights_capa1, weights_capa2)
             print_precision_train(weights_capa1, weights_capa2)
 
