@@ -91,8 +91,8 @@ def all_train_test_data():
 	fotos_test = fotos_shuffled[N_train:,:]
 	label_test = label_shuffled[N_train:]
 
-	label_train = vector_label(label_train)
+	label_v = vector_label(label_train)
 
 	del fotos  # libero memoria de las fotos (ya no se usaran)
 
-	return fotos_train, fotos_test, label_train, label_test
+	return fotos_train, fotos_test, label_train, label_v, label_test
