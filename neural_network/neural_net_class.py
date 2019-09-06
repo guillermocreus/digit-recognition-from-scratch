@@ -108,7 +108,8 @@ class NeuralNet:
         self.Ekj = np.empty((layer_dimensions[0], layer_dimensions[-1]))
         for l in range(L):
             self.layers[l] = Layer(layer_dimensions[l:l+2],
-                                   activation_functions[l])  # slice
+                                   activation_functions[l],
+                                   derivation_functions[l])
 
     def print_precision(self, data_train, label_train, data_test, label_test):
         self.feed_forward(data_test)
@@ -160,10 +161,8 @@ class NeuralNet:
                 next_layer = self.layers[l+1]
                 current_layer = self.layers[l]
                 suma = next_layer.delta.dot(next_layer.weights.T)
-                suma = suma.dot(np.ones(next_layer.J))
                 delta[l] = np.multiply
-                (current_layer.activation_function(self.A[l]), suma)
-
+                (current_layer.derivation_function(self.A[l]), suma)
             else:
                 current_layer = self.layers[l]
                 delta[l] = (self.X[l] - label_v) * factor_softmax
@@ -183,6 +182,7 @@ class NeuralNet:
         cont = 0
         self.feed_forward(data_train)
         while (cont < nIter):
+            print("Iteracion: ", cont)
             cont += 1
             self.back_propagate()
             self.update_weights(learning_rate)
@@ -203,12 +203,13 @@ class NeuralNet:
 
 
 class Layer:
-    def __init__(self, dimensions, activation_function):
+    def __init__(self, dimensions, activation_function, derivation_function):
         self.I = dimensions[0]
         self.J = dimensions[1]
         correction = np.sqrt(2 / dimensions[0])
         self.weights = correction * np.random.rand(self.I, self.J)
         self.activation_function = activation_function
+        self.derivation_function = derivation_function
         self.grad = np.empty((self.I, self.J))
         self.delta = np.empty((M, self.J))
 
