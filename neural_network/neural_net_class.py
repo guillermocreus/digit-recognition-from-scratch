@@ -1,17 +1,14 @@
 import numpy as np
-from numpy import linalg as LA
-import time
-
 import sys
 sys.path.insert(0, '../Import_data')
 
-#______IMPORT DATA_________
+# ______IMPORT DATA_________
 
 from train_test_data import all_train_test_data
 data_train, data_test, label_train, label_v, label_test
 M = len(data_train)
 
-#__________________________
+# __________________________
 
 
 # __________ FUNCIONES ______________
@@ -20,12 +17,14 @@ factor_hidden = 1e-3
 factor_start = 1e-4
 factor_softmax = 1e-2
 
+
 def relu_hidden(x):
     var = x * factor_hidden
     if (var > 0):
         return var
     else:
         return var * 1e-3
+
     
 def relu_start(x):
     var = x * factor_start
@@ -33,14 +32,15 @@ def relu_start(x):
         return var
     else: 
         return var * 1e-3
-    
+
+
 def relu_hidden_d(y):
     if (y > 0):
         return factor_hidden
     else:
         return factor_hidden * 1e-3
 
-    
+
 def relu_start_d(y):
     if (y > 0):
         return factor_start
@@ -63,13 +63,6 @@ def exponencial(x):
     elif (var < -20):
         return np.exp(-20)
     return np.exp(var)
-
-
-def softmax(a):
-    aux = exp_v(a)
-    suma = aux.dot(np.ones(10))
-    Z = (aux.T * divide_v(suma)).T
-    return Z
 
 
 # _______________________________________
@@ -109,9 +102,9 @@ def softmax(a):
 
 class NeuralNet:
     def __init__(self, L, layer_dimensions, activation_functions, derivation_functions):  # size(layer_dimensions) == L+1
-        self.layers = np.empty((L,), d.type = object)  # data + L layers
+        self.layers = np.empty((L,), dtype = object)  # data + L layers
         self.L = L # number of layers
-        self.X = np.empty((L,), d.type = object)
+        self.X = np.empty((L,), dtype = object)
         self.Ekj = np.empty((layer_dimensions[0], layer_dimensions[-1]))
         for l in range(L):
             self.layers[l] = Layer(layer_dimensions[l:l+2], activation_functions[l]) #slice
