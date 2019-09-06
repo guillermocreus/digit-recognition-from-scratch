@@ -189,7 +189,8 @@ class NeuralNet:
             self.feed_forward(data_train)
 
             if (cont % 50 == 0):
-                self.print_precision(data_train, data_test)
+                self.print_precision(data_train, label_train,
+                                     data_test, label_test)
                 self.calculate_error()
 
     def obtain_grad(self):
