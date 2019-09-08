@@ -13,8 +13,8 @@ M = len(data_train)
 
 # __________ FUNCIONES ______________
 
-factor_hidden = 1e-3
-factor_start = 1e-4
+factor_hidden = 1e-1
+factor_start = 1e-2
 factor_softmax = 1e-2
 
 
@@ -103,9 +103,12 @@ class NeuralNet:
                  derivation_functions):  # size(layer_dimensions) == L+1
         self.layers = np.empty((L,), dtype=object)  # data + L layers
         self.L = L  # number of layers
-        self.X = np.empty((L,), dtype=object)
-        self.A = np.empty((L,), dtype=object)
-        self.Ekj = np.empty((layer_dimensions[0], layer_dimensions[-1]))
+        self.X = np.zeros((L,), dtype=object)
+        self.A = np.zeros((L,), dtype=object)
+        self.Ekj = np.empty((len(data_train), layer_dimensions[-1]))
+
+        # AQUI HABIA UN ERROR, Ekj
+
         for l in range(L):
             self.layers[l] = Layer(layer_dimensions[l:l+2],
                                    activation_functions[l],
@@ -144,7 +147,7 @@ class NeuralNet:
 
     def feed_forward(self, data):
         L = self.L
-        self.A[0] = data_train.dot(self.layers[0].weights)
+        self.A[0] = data.dot(self.layers[0].weights)
         self.X[0] = self.layers[0].activation_function(self.A[0])
         for l in range(1, L):
             self.A[l] = self.X[l-1].dot(self.layers[l].weights)
@@ -155,17 +158,16 @@ class NeuralNet:
 
     def obtain_deltas(self):
         L = self.L
-        delta = np.empty((L,), dtype=object)
         for l in range(L):
             if (l < L-1):
                 next_layer = self.layers[l+1]
                 current_layer = self.layers[l]
                 suma = next_layer.delta.dot(next_layer.weights.T)
-                delta[l] = np.multiply
-                (current_layer.derivation_function(self.A[l]), suma)
+                current_layer.delta = np.multiply(
+                    current_layer.derivation_function(self.A[l]), suma)
             else:
                 current_layer = self.layers[l]
-                delta[l] = (self.X[l] - label_v) * factor_softmax
+                current_layer.delta = (self.X[l] - label_v) * factor_softmax
 
     def back_propagate(self):
         self.obtain_deltas()
@@ -188,7 +190,7 @@ class NeuralNet:
             self.update_weights(learning_rate)
             self.feed_forward(data_train)
 
-            if (cont % 50 == 0):
+            if (cont % 10 == 0):
                 self.print_precision(data_train, label_train,
                                      data_test, label_test)
                 self.calculate_error()
@@ -211,8 +213,8 @@ class Layer:
         self.weights = correction * np.random.rand(self.I, self.J)
         self.activation_function = activation_function
         self.derivation_function = derivation_function
-        self.grad = np.empty((self.I, self.J))
-        self.delta = np.empty((M, self.J))
+        self.grad = np.zeros((self.I, self.J))
+        self.delta = np.zeros((M, self.J))
 
 
 def main():
