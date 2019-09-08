@@ -13,39 +13,24 @@ M = len(data_train)
 
 # __________ FUNCIONES ______________
 
-factor_hidden = 1e-1
-factor_start = 1e-2
-factor_softmax = 1e-2
+factor_hidden = 5e-2
+factor_start = 1e-3
+factor_softmax = 1e-1
 
 
-def relu_hidden(x):
-    var = x * factor_hidden
+def relu(x, factor):
+    var = x * factor
     if (var > 0):
         return var
     else:
         return var * 1e-3
 
 
-def relu_start(x):
-    var = x * factor_start
-    if (var > 0):
-        return var
-    else:
-        return var * 1e-3
-
-
-def relu_hidden_d(y):
+def relu_d(y, factor):
     if (y > 0):
-        return factor_hidden
+        return factor
     else:
-        return factor_hidden * 1e-3
-
-
-def relu_start_d(y):
-    if (y > 0):
-        return factor_start
-    else:
-        return factor_start * 1e-3
+        return factor * 1e-3
 
 
 def square(x):
@@ -71,15 +56,8 @@ def exponencial(x):
 # _____________ VECTORIZAR ______________
 
 
-relu_start_v = np.vectorize(relu_start)
-relu_start_d_v = np.vectorize(relu_start_d)
-
-relu_start_v = np.vectorize(relu_start)
-relu_sart_d_v = np.vectorize(relu_start_d)
-
-relu_hidden_v = np.vectorize(relu_hidden)
-relu_hidden_d_v = np.vectorize(relu_hidden_d)
-
+relu_v = np.vectorize(relu)
+relu_d_v = np.vectorize(relu_d)
 square_v = np.vectorize(square)
 divide_v = np.vectorize(divide)
 exp_v = np.vectorize(exponencial)
@@ -99,16 +77,17 @@ def softmax(a):
 
 
 class NeuralNet:
-    def __init__(self, L, layer_dimensions, activation_functions,
+    def __init__(self, L, layer_dimensions, factores, activation_functions,
                  derivation_functions):  # size(layer_dimensions) == L+1
         self.layers = np.empty((L,), dtype=object)  # data + L layers
         self.L = L  # number of layers
         self.X = np.zeros((L,), dtype=object)
         self.A = np.zeros((L,), dtype=object)
         self.Ekj = np.empty((len(data_train), layer_dimensions[-1]))
-
         # AQUI HABIA UN ERROR, Ekj
 
+        self.error_antiguo = 1e6
+        self.factores = factores
         for l in range(L):
             self.layers[l] = Layer(layer_dimensions[l:l+2],
                                    activation_functions[l],
@@ -123,7 +102,7 @@ class NeuralNet:
                 aciertos += 1
 
         porcentaje_aciertos = 100 * aciertos / len(data_test)
-        print("El porcentaje de aciertos del TEST es del: ",
+        print("\n", "El porcentaje de aciertos del TEST es del: ",
               str(porcentaje_aciertos), "%\n")
 
         self.feed_forward(data_train)
@@ -156,6 +135,8 @@ class NeuralNet:
             else:
                 self.X[l] = softmax(self.A[l])
 
+            # print("X[" + str(l) + "]   ", self.X[l], "\n")
+
     def obtain_deltas(self):
         L = self.L
         for l in range(L):
@@ -164,10 +145,11 @@ class NeuralNet:
                 current_layer = self.layers[l]
                 suma = next_layer.delta.dot(next_layer.weights.T)
                 current_layer.delta = np.multiply(
-                    current_layer.derivation_function(self.A[l]), suma)
+                    current_layer.
+                    derivation_function(self.A[l], self.factores[l]), suma)
             else:
                 current_layer = self.layers[l]
-                current_layer.delta = (self.X[l] - label_v) * factor_softmax
+                current_layer.delta = (self.X[l] - label_v) * self.factores[l]
 
     def back_propagate(self):
         self.obtain_deltas()
@@ -193,7 +175,10 @@ class NeuralNet:
             if (cont % 10 == 0):
                 self.print_precision(data_train, label_train,
                                      data_test, label_test)
-                self.calculate_error()
+                error = self.calculate_error()
+                print("Error actual: ", str(self.calculate_error()))
+                print("Delta error: ", str(self.error_antiguo - error), "\n")
+                self.error_antiguo = error
 
     def obtain_grad(self):
         L = self.L
@@ -223,17 +208,19 @@ def main():
     layer_dimensions[0] = 28 * 28 + 1
     layer_dimensions[-1] = 10
 
-    activation_functions = L*[relu_hidden_v]
-    activation_functions[0] = relu_start_v
+    factores = L * [1e-2]
+    for i in range(L-1):
+        factores[L-2-i] = factores[L-2-i+1] / 2
+
+    activation_functions = L*[relu_v]
     activation_functions[-1] = softmax
 
-    derivation_functions = L*[relu_hidden_d_v]
-    derivation_functions[0] = relu_start_d_v
+    derivation_functions = L*[relu_d_v]
     derivation_functions[-1] = softmax
 
-    NeuralNetwork = NeuralNet(L, layer_dimensions,
+    NeuralNetwork = NeuralNet(L, layer_dimensions, factores,
                               activation_functions, derivation_functions)
-    NeuralNetwork.gradient_descent(0.1, 4000, data_train, label_train,
+    NeuralNetwork.gradient_descent(0.2, 4000, data_train, label_train,
                                    data_test, label_test)
 
 
