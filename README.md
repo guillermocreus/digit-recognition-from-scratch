@@ -1,6 +1,6 @@
-# Project Title
+# Digit Recognition
 
-One Paragraph of project description goes here
+This is an implementation of a neural network used for digit recognition, using the MNIST dataset.
 
 ## Getting Started
 
@@ -72,7 +72,8 @@ We use [SemVer](http://semver.org/) for versioning. For the versions available, 
 
 ## Authors
 
-* **Billie Thompson** - *Initial work* - [PurpleBooth](https://github.com/PurpleBooth)
+* **Guillermo Creus** - *Main contributor* - [PurpleBooth](https://github.com/PurpleBooth)
+* **Victor Picón** - *Main contributor* 
 
 See also the list of [contributors](https://github.com/your/project/contributors) who participated in this project.
 
