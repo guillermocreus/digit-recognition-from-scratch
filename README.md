@@ -11,8 +11,5 @@ This project was written entirely in [Python](https://www.python.org/) version 3
 * **Guillermo Creus** - *Main contributor* - [guillermocreus98](https://github.com/PurpleBooth)
 * **Victor Picón** - *Main contributor* - [vpicon](https://gitlab.com/vpicon)
 
-## Acknowledgments
-
-* Hat tip to anyone whose code was used
-* Inspiration
-* etc
+## Final Note
+Kwargs.
