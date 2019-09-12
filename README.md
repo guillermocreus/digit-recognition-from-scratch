@@ -1,7 +1,7 @@
 # Digit Recognition
 
 This is an implementation of a neural network used for digit recognition, using the MNIST dataset. The implementation is done **from scratch**, in the sense that we are not using any existing machine learning libraries.
-It was firstly developed as a two-layer neural network, but as of today it is fully customizable in the layer frame.
+It was firstly developed as a two-layer neural network, but as of today it is fully customizable in that regard.
 
 ## First steps
 
